@@ -70,6 +70,26 @@ export function MerchantInfo({ apiKey, onUpdate, onDelete, updateAPIKey }: Merch
     return `${ text.substring(0, showLength) }${ '•'.repeat(20) }${ text.substring(text.length - showLength) }`
   }
 
+  /**
+   * 验证并安全化URL，防止XSS和恶意跳转
+   * 只允许http://和https://协议，其他协议（如javascript:）将被拒绝
+   */
+  const validateUrl = (url: string): string => {
+    if (!url) return '#'
+    try {
+      const parsed = new URL(url, 'http://dummy') // 使用base URL解析相对URL
+      // 只允许http和https协议
+      if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
+        console.warn(`Blocked unsafe URL protocol: ${parsed.protocol}`)
+        return '#'
+      }
+      return url
+    } catch {
+      console.warn(`Failed to parse URL: ${url}`)
+      return '#'
+    }
+  }
+
   return (
     <div className="space-y-6 sticky top-0">
       <div>
@@ -95,8 +115,9 @@ export function MerchantInfo({ apiKey, onUpdate, onDelete, updateAPIKey }: Merch
           <div className="px-3 py-2 flex items-center justify-between border-b border-dashed last:border-b-0">
             <label className="text-xs font-medium text-muted-foreground">应用地址</label>
             <Link
-              href={apiKey.app_homepage_url}
+              href={validateUrl(apiKey.app_homepage_url)}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-indigo-500 hover:underline flex items-center gap-1 text-right max-w-[70%]"
             >
               <span className="truncate flex-1 min-w-0">
@@ -110,8 +131,9 @@ export function MerchantInfo({ apiKey, onUpdate, onDelete, updateAPIKey }: Merch
             <div className="px-3 py-2 flex items-center justify-between border-b border-dashed last:border-b-0">
               <label className="text-xs font-medium text-muted-foreground">回调 URI</label>
               <Link
-                href={apiKey.redirect_uri}
+                href={validateUrl(apiKey.redirect_uri)}
                 target="_blank"
+                rel="noopener noreferrer"
                 className="text-xs text-indigo-500 hover:underline flex items-center gap-1 text-right max-w-[70%]"
               >
                 <span className="truncate flex-1 min-w-0">
@@ -125,8 +147,9 @@ export function MerchantInfo({ apiKey, onUpdate, onDelete, updateAPIKey }: Merch
           <div className="px-3 py-2 flex items-center justify-between">
             <label className="text-xs font-medium text-muted-foreground">通知 URL</label>
             <Link
-              href={apiKey.notify_url}
+              href={validateUrl(apiKey.notify_url)}
               target="_blank"
+              rel="noopener noreferrer"
               className="text-xs text-indigo-500 hover:underline flex items-center gap-1 text-right max-w-[70%]"
             >
               <span className="truncate flex-1 min-w-0">
